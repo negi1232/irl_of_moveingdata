@@ -3,7 +3,7 @@ import numpy as np
 import sqlite3
 import os
 import tqdm
-def trajectories(nodedict):
+def trajectories(nodedict,starthour):
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
     insertlist=[]
     dbname = 'log.db'
@@ -18,12 +18,12 @@ def trajectories(nodedict):
         if "tripdate" in res[i][1] :
             tables.append(res[i][1])
     max=min=None
-    part=60*24#分×時
+    part=60#分×時
     trajectories = np.full((len(tables),part),-1)#エキスパート達の軌道を保存するリスト
     for i in range(len(tables)):
         defaultnode=5173
         search_sql="SELECT * FROM "+str(tables[i])+" WHERE hour = ? AND minute = ?"
-        for hour in range(0,24):
+        for hour in range(starthour,starthour+1):
             for minute in range(60):
                 cur.execute(search_sql,[hour,minute])
                 #print(cur.fetchone())
@@ -34,14 +34,14 @@ def trajectories(nodedict):
                     
                     spot=nodedict[spot]
                     defaultnode=spot
-                    trajectories[i,(hour*60)+minute]=spot
+                    trajectories[i,minute]=spot
                     if max is None or max<spot:
                         max=spot
                     if min is None or min>spot:
                         min=spot
 
                 except:
-                    trajectories[i,(hour*60)+minute]=defaultnode
+                    trajectories[i,minute]=defaultnode
                 
     return trajectories,max,min#otozureteinaitennwo-1tokakukara
 
